@@ -5,6 +5,7 @@ from . import views
 
 api_router = routers.DefaultRouter()
 api_router.register(r'pieces', views.PuzzlePieceViewSet)
+api_router.register(r'transcriptions', views.TranscriptionDataViewSet)
 
 urlpatterns = [
 	path("", views.index, name="index"),

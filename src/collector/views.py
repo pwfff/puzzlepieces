@@ -20,7 +20,7 @@ import hashlib
 import requests
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 
 def hash_my_data(url):
 	url = url.encode("utf-8")
@@ -451,3 +451,28 @@ class PuzzlePieceViewSet(viewsets.ReadOnlyModelViewSet):
         rando = qs[random_index]
         serializer = self.get_serializer(rando)
         return Response(serializer.data)
+
+
+class TranscriptionDataViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+    queryset = TranscriptionData.objects.all()
+    serializer_class = TranscriptionDataSerializer
+
+    # copied code from the mixin, but we need access to request here
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+
+        # TODO: ALSO MAKE HASH
+
+        # ip_address in kwargs here *should* put it in?
+        serializer.save(ip_address=ip)
+
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
