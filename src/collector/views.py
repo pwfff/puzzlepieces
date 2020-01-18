@@ -431,6 +431,6 @@ def confidenceSolutionDetail(request, solution_id):
 	return render(request, 'collector/confidenceSolutionDetail.html', context)
 
 
-class PuzzlePieceViewSet(viewsets.ModelViewSet):
+class PuzzlePieceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PuzzlePiece.objects.all()
     serializer_class = PuzzlePieceSerializer
