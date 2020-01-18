@@ -5,12 +5,19 @@ from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.db.models import Count
 from .models import *
+from .serializers import (
+    PuzzlePieceSerializer,
+    TranscriptionDataSerializer,
+    BadImageSerializer,
+    ConfidentSolutionSerializer,
+)
 import json
 #from django.db import transaction
 from . import UtilityOps as UtilityOps
 from urllib.parse import urlparse
 import hashlib
 import requests
+from rest_framework import viewsets
 
 def hash_my_data(url):
 	url = url.encode("utf-8")
@@ -422,3 +429,8 @@ def confidenceSolutionDetail(request, solution_id):
 		"solution": solution,
 	}
 	return render(request, 'collector/confidenceSolutionDetail.html', context)
+
+
+class PuzzlePieceViewSet(viewsets.ModelViewSet):
+    queryset = PuzzlePiece.objects.all()
+    serializer_class = PuzzlePieceSerializer
