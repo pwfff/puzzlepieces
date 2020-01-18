@@ -15,9 +15,12 @@ import json
 #from django.db import transaction
 from . import UtilityOps as UtilityOps
 from urllib.parse import urlparse
+from random import randint
 import hashlib
 import requests
-from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status, viewsets
 
 def hash_my_data(url):
 	url = url.encode("utf-8")
@@ -434,3 +437,17 @@ def confidenceSolutionDetail(request, solution_id):
 class PuzzlePieceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PuzzlePiece.objects.all()
     serializer_class = PuzzlePieceSerializer
+
+    @action(detail=False)
+    def get_random(self, request):
+        qs = PuzzlePiece.objects.annotate(
+            transcription_count=Count('transcriptions'),
+        ).filter(transcription_count__lt=5)
+        count = qs.aggregate(count=Count('pk'))['count']
+        print(count)
+        if count < 1:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+        random_index = randint(0, count - 1)
+        rando = qs[random_index]
+        serializer = self.get_serializer(rando)
+        return Response(serializer.data)
